@@ -2,7 +2,7 @@
 import * as styledComponents from "styled-components";
 
 interface IThemeInterface {
-  blurColor: String
+  blurColor: string
 }
 
 const {
