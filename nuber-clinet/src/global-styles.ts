@@ -4,7 +4,7 @@ import { createGlobalStyle } from './typed-components';
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css?family=Maven+Pro');
-  ${reset}
+  ${reset};
   *{
     box-sizing: border-box;
   }
