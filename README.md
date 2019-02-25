@@ -21,5 +21,6 @@ ReactJS, Apollo, Typescrpit
   - [ ] Settings
   - [ ] Saved Places
   - [ ] Add Place
+  - [ ] Find Address
   - [ ] Challenge: Ride History
-  
+   
