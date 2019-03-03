@@ -3,7 +3,7 @@ import { Mutation } from 'react-apollo';
 import { RouteComponentProps } from 'react-router-dom';
 import { toast } from "react-toastify";
 import PhoneLoginPresenter from "./PhoneLoginPresenter";
-import { PHONE_SIGN_IN } from './PhoneQueries';
+import { PHONE_SIGN_IN } from './PhoneQueries.queries';
 
 interface IState{
   countryCode: string;
@@ -53,6 +53,7 @@ class PhoneLoginContainer extends React.Component<
           phoneNumber={phoneNumber}
           onInputChange={this.onInputChange}
           onSubmit={onSubmit}
+          // loading={loading}
         />
         )
         }}
