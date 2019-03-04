@@ -1,5 +1,5 @@
 import React from "react";
-import { Mutation, MutationUpdaterFn } from 'react-apollo';
+import { Mutation } from 'react-apollo';
 import { RouteComponentProps } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { 
@@ -34,7 +34,14 @@ class PhoneLoginContainer extends React.Component<
         variables={{
           phoneNumber: `${countryCode}${phoneNumber}`
         }}
-        update={this.afterSubmit}
+        onCompleted={data=>{
+          const { StartPhoneVerification } = data;
+          if( StartPhoneVerification.ok ){
+            return;
+          }else{
+            toast.error(StartPhoneVerification.error);
+          }      
+        }}
       >
       {(mutation, {loading} ) => {
         const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
@@ -72,13 +79,6 @@ class PhoneLoginContainer extends React.Component<
       [name]: value
     } as any);
   };
-
-  public afterSubmit: MutationUpdaterFn = (
-    cache,
-    data) => {
-    console.log(data);
-
-  }
 
 }
 
