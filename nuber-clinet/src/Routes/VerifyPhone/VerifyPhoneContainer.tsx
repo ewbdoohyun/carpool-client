@@ -1,47 +1,60 @@
 import React from "react";
-import { Mutation } from 'react-apollo';
+import { Mutation } from "react-apollo";
 import { RouteComponentProps } from "react-router-dom";
-import { verifyPhone, verifyPhoneVariables } from '../../types/api';
+import { toast } from "react-toastify";
+import { verifyPhone, verifyPhoneVariables } from "../../types/api";
 import VerifyPhonePresenter from "./VerifyPhonePresenter";
-import { VERIFY_PHONE } from './VerifyPhoneQueries';
+import { VERIFY_PHONE } from "./VerifyPhoneQueries";
 
 interface IState {
-  key: string;
+  verificationKey: string;
   phoneNumber: string;
 }
 
 interface IProps extends RouteComponentProps<any> {}
 
-class VerifyMutation extends Mutation<verifyPhone,verifyPhoneVariables> {}
+class VerifyMutation extends Mutation<verifyPhone, verifyPhoneVariables> {}
 
-class VerifyPhoneContainer extends React.Component<IProps, IState>{
-
-  constructor(props:IProps){
+class VerifyPhoneContainer extends React.Component<IProps, IState> {
+  constructor(props: IProps) {
     super(props);
-    if(!props.location.state){
+    if (!props.location.state) {
       props.history.push("/");
     }
     this.state = {
-      key:"",
-      phoneNumber: props.location.state.phone
+      phoneNumber: props.location.state.phone,
+      verificationKey: ""
     };
-  };
+  }
   public render() {
-    const { key, phoneNumber } = this.state;
+    const { verificationKey, phoneNumber } = this.state;
     return (
-      <VerifyMutation 
+      <VerifyMutation
         mutation={VERIFY_PHONE}
         variables={{
-          key,
+          key: verificationKey,
           phoneNumber
         }}
+        onCompleted={data => {
+          const { CompletePhoneVerification } = data;
+          if (CompletePhoneVerification.ok) {
+            toast.success("You're verified, loggin in now");
+          } else {
+            toast.error(CompletePhoneVerification.error);
+          }
+        }}
       >
-        {(mutation,{loading}) => (
-          <VerifyPhonePresenter onChange={this.onInputChange} key = {key}/>
+        {(mutation, { loading }) => (
+          <VerifyPhonePresenter
+            onSubmit={mutation}
+            onChange={this.onInputChange}
+            verificationKey={verificationKey}
+            loading={loading}
+          />
         )}
       </VerifyMutation>
     );
-  };
+  }
 
   public onInputChange: React.ChangeEventHandler<HTMLInputElement> = event => {
     const {
@@ -50,7 +63,7 @@ class VerifyPhoneContainer extends React.Component<IProps, IState>{
     this.setState({
       [name]: value
     } as any);
-  }
+  };
 }
 
 export default VerifyPhoneContainer;
