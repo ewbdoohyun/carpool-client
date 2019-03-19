@@ -4,6 +4,8 @@ import * as styledComponents from "styled-components";
 interface IThemeInterface {
   blurColor: string;
   greyColor: string;
+  yellowColor: string;
+  greenColor: string;
 }
 
 const {

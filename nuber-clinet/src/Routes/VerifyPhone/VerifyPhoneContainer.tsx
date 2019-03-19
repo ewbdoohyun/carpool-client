@@ -19,7 +19,8 @@ class VerifyMutation extends Mutation<verifyPhone, verifyPhoneVariables> {}
 class VerifyPhoneContainer extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
-    if (!props.location.state) {
+    
+    if(!props.location.state) {
       props.history.push("/");
     }
     this.state = {
