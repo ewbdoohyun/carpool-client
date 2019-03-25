@@ -1,7 +1,8 @@
 import React from "react";
+import { MutationFn } from 'react-apollo';
 import { Link } from "react-router-dom";
 import styled from "../../typed-components";
-import { userProfile, userProfile_GetMyProfile } from '../../types/api';
+import {  toggleDriving,userProfile, userProfile_GetMyProfile } from '../../types/api';
 
 const Container = styled.div`
   height: 100%;
@@ -78,55 +79,50 @@ const ToggleDriving = styled<IToggleProps, any>("button")`
 interface IProps {
   data?: userProfile;
   loading: boolean;
+  toggleDrivingFn: MutationFn<toggleDriving>;
 }
 
-const MenuPresenter: React.SFC<IProps> = ( data,loading ) => {
-  const GetMyProfile = data.data;
-  if(GetMyProfile){
+const MenuPresenter: React.SFC<IProps> = ({
+  data,
+  loading,
+  toggleDrivingFn
+}) => {
+  const GetMyProfile = data;
+  if (GetMyProfile) {
     const response: userProfile_GetMyProfile = GetMyProfile.GetMyProfile;
-
-    return (
-      <Container>
-        {loading &&
-         response &&
-          response.user &&
-          response.user.profilePhoto &&
-          response.user.fullName &&
-          (
-          <React.Fragment>
-              <Header>
-                <Grid>
-                  <Link to={"/edit-account"}>
-                    <Image 
-                      src={
-                        response.user.profilePhoto ||
-                        "https://lh3.googleusercontent.com/-CTwXMuZRaWw/AAAAAAAAAAI/AAAAAAAAAUg/8T5nFuIdnHE/photo.jpg"
-                      }
-                    />
-                  </Link>
-                  <Text>
-                    <Name>Danny Uber Tester</Name>
-                    <Rating>4.5</Rating>
-                  </Text>
-                </Grid>
-            </Header>
-            <SLink to="/trips">Your Trips</SLink>
-            <SLink to="/settings">Settings</SLink>
-            <ToggleDriving isDriving={response.user.isDriving}>
-                {response.user.isDriving ? "Stop driving" : "Start driving"}
-            </ToggleDriving>        
-          </React.Fragment>
-        )}
-  
-    </Container>
-    )
-  }else{
-    return(
-      null
-    )
+    if (response && response.ok && response.user) {
+      const user = response.user;
+      return (
+        <Container>
+          <Header>
+            <Grid>
+              <Link to={"/edit-account"}>
+                <Image
+                  src={
+                    user.profilePhoto ||
+                    "https://yt3.ggpht.com/-CTwXMuZRaWw/AAAAAAAAAAI/AAAAAAAAAAA/HTJy-KJ4F2c/s88-c-k-no-mo-rj-c0xffffff/photo.jpg"
+                  }
+                />
+              </Link>
+              <Text>
+                <Name>{user.fullName}</Name>
+                <Rating>4.5</Rating>
+              </Text>
+            </Grid>
+          </Header>
+          <SLink to="/trips">Your Trips</SLink>
+          <SLink to="/settings">Settings</SLink>
+          <ToggleDriving onClick={toggleDrivingFn} isDriving={user.isDriving}>
+            {user.isDriving ? "Stop driving" : "Start driving"}
+          </ToggleDriving>
+        </Container>
+      );
+    } else {
+      return <div>can't load</div>;
+    }
+  } else {
+    return <div>can't load</div>;
   }
-  
-  }
-;
+};
 
 export default MenuPresenter;
