@@ -75,8 +75,8 @@ const ToggleDriving = styled<IToggleProps, any>("button")`
   cursor: pointer;
 `;
 
-interface IProps{
-  data? : userProfile;
+interface IProps {
+  data?: userProfile;
   loading: boolean;
 }
 
@@ -84,15 +84,15 @@ const MenuPresenter: React.SFC<IProps> = ( data,loading ) => {
   const GetMyProfile = data.data;
   if(GetMyProfile){
     const response: userProfile_GetMyProfile = GetMyProfile.GetMyProfile;
-    console.log(GetMyProfile);
-    console.log(response);
-    console.log(loading);
-    console.log(!loading);
+
     return (
       <Container>
         {loading &&
          response &&
-          response.user && (
+          response.user &&
+          response.user.profilePhoto &&
+          response.user.fullName &&
+          (
           <React.Fragment>
               <Header>
                 <Grid>
@@ -113,7 +113,7 @@ const MenuPresenter: React.SFC<IProps> = ( data,loading ) => {
             <SLink to="/trips">Your Trips</SLink>
             <SLink to="/settings">Settings</SLink>
             <ToggleDriving isDriving={response.user.isDriving}>
-                      {response.user.isDriving ? "Stop driving" : "Start driving"}
+                {response.user.isDriving ? "Stop driving" : "Start driving"}
             </ToggleDriving>        
           </React.Fragment>
         )}
