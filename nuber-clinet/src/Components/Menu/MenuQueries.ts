@@ -8,4 +8,3 @@ export const TOGGLE_DRIVING = gql`
     }
   }
 `;
-
