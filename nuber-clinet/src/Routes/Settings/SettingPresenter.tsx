@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import Header from "../../Components/Header";
 import Place from "../../Components/Place";
 import styled from "../../typed-components";
-import { userProfile ,userProfile_GetMyProfile} from "../../types/api";
+import { getPlaces, getPlaces_GetMyPlaces, userProfile ,userProfile_GetMyProfile} from "../../types/api";
 
 const Container = styled.div`
   padding: 0px 40px;
@@ -45,18 +45,30 @@ const SLink = styled(Link)`
 interface IProps {
   logUserOut: MutationFn;
   userData?: userProfile;
+  placesData?: getPlaces;
   userDataLoading: boolean;
+  placesLoading: boolean;
 }
 
 const SettingsPresenter: React.SFC<IProps> = ({
   logUserOut,
   userData,
+  placesData,
   userDataLoading,
+  placesLoading
 }) => {
-  if(userData){
-    const response: userProfile_GetMyProfile = userData.GetMyProfile;
-    if (response && response.ok && response.user) {
-      const user = response.user;
+  if(userData ){
+    const userResponse: userProfile_GetMyProfile = userData.GetMyProfile;
+    let tmpPlaces;
+    if(placesData){
+      const placeResponse: getPlaces_GetMyPlaces = placesData.GetMyPlaces;
+      if(placeResponse && placeResponse.ok && placeResponse.places){
+        tmpPlaces = placeResponse.places;
+      }
+    }
+      const places = tmpPlaces;
+    if (userResponse && userResponse.ok && userResponse.user) {
+      const user = userResponse.user;
       return (
         <React.Fragment>
             <Helmet>
@@ -79,9 +91,17 @@ const SettingsPresenter: React.SFC<IProps> = ({
                     </React.Fragment>
                   )}
               </GridLink>
-              <Place fav={false} name={"Home"} address={"12345"} />
-              <Place fav={false} name={"Home"} address={"12345"} />
-              <Place fav={false} name={"Home"} address={"12345"} />
+              {!placesLoading &&
+                places &&
+                places.map(place =>(
+                  <Place
+                    key={place!.id}
+                    fav={place!.isFav}
+                    name={place!.name}
+                    address={place!.address}             
+                  />
+                ))
+                }
               <SLink to={"/places"}>Go to Places</SLink>
               <FakeLink onClick={logUserOut as any}>Log Out</FakeLink>
             </Container>
