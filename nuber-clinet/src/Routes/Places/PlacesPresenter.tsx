@@ -30,11 +30,7 @@ const PlacesPresenter: React.SFC<IProps> = ({
             <title>Places | Nuber</title>
           </Helmet>
           <Header title={"Places"} backTo={"/"} />
-          {!loading &&
-            places &&
-            places.length === 0 && (
-              <SLink to={"/add-place"}>Place add some places!</SLink>
-            ) }
+          {!loading && places && places.length === 0 && "You have no places" }
           <Container>
           {!loading &&
           places &&
@@ -46,6 +42,7 @@ const PlacesPresenter: React.SFC<IProps> = ({
               address={place!.address}
             />
           ))}
+          <SLink to={"/add-place"}>Add some places!</SLink>
         </Container>
 
         </React.Fragment>
