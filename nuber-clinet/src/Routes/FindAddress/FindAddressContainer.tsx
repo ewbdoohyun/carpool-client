@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { reverseGeoCode } from '../../mapHelpers';
+import { geoCode,reverseGeoCode } from '../../mapHelpers';
 import FindAddressPresenter from './FindAddressPresenter';
 
 interface IState {
@@ -39,6 +39,7 @@ class FindAddressContainer extends React.Component<any,IState>{
       lng: longitude
     })
     this.loadMap(latitude,longitude);
+    this.reverseGeocodeAddress(latitude, longitude);
   };
 
   public handleGeoError = () => {
@@ -55,6 +56,7 @@ class FindAddressContainer extends React.Component<any,IState>{
         lng        
       },
       disableDefaultUI: false,
+      minZoom: 8,
       zoom:11,
 
     };
@@ -66,12 +68,11 @@ class FindAddressContainer extends React.Component<any,IState>{
     const newCenter = this.map.getCenter();
     const lat = newCenter.lat();
     const lng = newCenter.lng();
-    const reversedAddress = await reverseGeoCode(lat, lng);
     this.setState({
-      address: reversedAddress,
       lat,
       lng
     });
+    this.reverseGeocodeAddress(lat,lng);
   }
 
   public render(){
@@ -85,7 +86,7 @@ class FindAddressContainer extends React.Component<any,IState>{
       />
     )
   }
-  
+
   public onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: {name, value}
@@ -94,9 +95,27 @@ class FindAddressContainer extends React.Component<any,IState>{
       [name]: value
     } as any);
   };
-  public onInputBlur = () =>{
-    console.log("Address updated");
-  }
+  public onInputBlur = async () =>{
+    const {address} = this.state;
+    const result = await geoCode(address);
+    if(result !== false){
+      const {lat , lng, formatted_address} = result;
+      this.setState({
+        address:formatted_address,
+        lat,
+        lng
+      });
+      this.map.panTo({ lat, lng });
+    };
+  };
+  public reverseGeocodeAddress =  async (lat: number, lng: number) => {
+    const reversedAddress = await reverseGeoCode(lat, lng);
+    if( reversedAddress !== false){
+      this.setState({
+        address : reversedAddress
+      });
+    }
+  };
 }
 
 export default FindAddressContainer;
