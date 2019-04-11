@@ -71,6 +71,7 @@ class AddPlaceContainer extends React.Component<IProps,IState>{
       </AddPlaceQuery>
     )
   }
+
   public onInputChange: React.ChangeEventHandler<
   HTMLInputElement
 > = async event => {
