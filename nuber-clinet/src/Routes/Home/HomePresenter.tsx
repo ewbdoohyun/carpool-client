@@ -59,7 +59,7 @@ const HomePresenter: React.SFC<IProps> = ({
       }}
     >
       {!loading && <Button onClick={toggleMenu}>|||</Button>}
-      <Map innerRef={mapRef} />
+      <Map ref={mapRef} />
     </Sidebar>
   </Container>
 );

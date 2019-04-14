@@ -1,7 +1,7 @@
 import React from "react";
 import { Query } from "react-apollo";
 import ReactDOM from "react-dom";
-import { RouteComponentProps } from "react-router";
+import { RouteChildrenProps } from 'react-router';
 import { USER_PROFILE } from "../../sharedQueries";
 import { userProfile } from "../../types/api";
 import HomePresenter from "./HomePresenter";
@@ -12,7 +12,7 @@ interface IState {
   lng: number;
 }
 
-interface IProps extends RouteComponentProps<any> {
+interface IProps extends RouteChildrenProps<any> {
   google: any;
 }
 
@@ -60,6 +60,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     });
   };
   public handleGeoSucces = (positon: Position) => {
+
     const {
       coords: { latitude, longitude }
     } = positon;
@@ -82,8 +83,6 @@ class HomeContainer extends React.Component<IProps, IState> {
       minZoom: 8,
       zoom: 11
     };
-    console.log(this.mapRef);
-    console.log(mapNode,mapConfig);
     this.map = new maps.Map(mapNode, mapConfig);
     const userMarkerOptions: google.maps.MarkerOptions = {
       icon: {
