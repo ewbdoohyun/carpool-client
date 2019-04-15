@@ -5,6 +5,7 @@ import AddressBar from "../../Components/AddressBar";
 import Button from "../../Components/Button";
 import Menu from "../../Components/Menu";
 import styled from "../../typed-components";
+import { userProfile, userProfile_GetMyProfile } from '../../types/api';
 
 const Container = styled.div``;
 
@@ -55,6 +56,7 @@ interface IProps {
   onAddressSubmit: () => void;
   onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   price?: string;
+  data?: userProfile;
 }
 
 const HomePresenter: React.SFC<IProps> = ({
@@ -65,46 +67,63 @@ const HomePresenter: React.SFC<IProps> = ({
   mapRef,
   onInputChange,
   onAddressSubmit,
-  price
-}) => (
-  <Container>
-    <Helmet>
-      <title>Home | Number</title>
-    </Helmet>
-    <Sidebar
-      sidebar={<Menu />}
-      open={isMenuOpen}
-      onSetOpen={toggleMenu}
-      styles={{
-        sidebar: {
-          backgroundColor: "white",
-          width: "80%",
-          zIndex: "10"
-        }
-      }}
-    >
-      {!loading && <MenuButton onClick={toggleMenu}>|||</MenuButton>}
-      <AddressBar
-        name={"toAddress"}
-        onChange={onInputChange}
-        value={toAddress}
-        onBlur={null}
-      />
-      {price && (
-        <RequestButton 
-          onClick={onAddressSubmit}
-          disabled={toAddress === ""}
-          value={`Request Ride ($${price})`}
-        />
-      )}
-      <ExtendedButton
-        onClick={onAddressSubmit}
-        disabled={toAddress === ""}
-        value={price ? "Change address" : "Pick Address"}
-      />
-      <Map ref={mapRef} />
-    </Sidebar>
-  </Container>
-);
+  price,
+  data
+}) => {
+  const GetMyProfile = data;
+  if(GetMyProfile){
+    const response: userProfile_GetMyProfile = GetMyProfile.GetMyProfile;
+    if (response && response.ok && response.user) {
+      const user = response.user;
+      if(user){
+        return (  <Container>
+          <Helmet>
+            <title>Home | Number</title>
+          </Helmet>
+          <Sidebar
+            sidebar={<Menu />}
+            open={isMenuOpen}
+            onSetOpen={toggleMenu}
+            styles={{
+              sidebar: {
+                backgroundColor: "white",
+                width: "80%",
+                zIndex: "10"
+              }
+            }}
+          >
+            {!loading && <MenuButton onClick={toggleMenu}>|||</MenuButton>}
+            {!user.isDriving && (
+              <React.Fragment>
+                <AddressBar
+                  name={"toAddress"}
+                  onChange={onInputChange}
+                  value={toAddress}
+                  onBlur={null}
+                />
+                <ExtendedButton
+                  onClick={onAddressSubmit}
+                  disabled={toAddress === ""}
+                  value={price ? "Change address" : "Pick Address"}
+                />              
+              </React.Fragment>
+            )}
+            {price && (
+              <RequestButton 
+                onClick={onAddressSubmit}
+                disabled={toAddress === ""}
+                value={`Request Ride ($${price})`}
+              />
+            )}
+            <Map ref={mapRef} />
+          </Sidebar>
+        </Container>)
+      }
+    }  
+  }
+      return (<div>Error</div>)
+    
+  }
+
 
 export default HomePresenter;
