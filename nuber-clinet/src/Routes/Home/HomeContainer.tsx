@@ -1,18 +1,24 @@
 import React from "react";
-import { graphql, MutationFn, Query } from "react-apollo";
+import { graphql, Mutation, MutationFn, Query } from "react-apollo";
 import ReactDOM from "react-dom";
-import { RouteChildrenProps } from 'react-router';
-import { toast } from 'react-toastify';
-import { geoCode } from '../../mapHelpers';
+import { RouteComponentProps } from "react-router-dom";
+import { toast } from "react-toastify";
+import { geoCode, reverseGeoCode } from "../../mapHelpers";
 import { USER_PROFILE } from "../../sharedQueries";
-import { 
+import {
   getDrivers,
-  reportMovement, 
+  reportMovement,
   reportMovementVariables,
-  userProfile,
+  requestRide,
+  requestRideVariables,
+  userProfile
 } from "../../types/api";
 import HomePresenter from "./HomePresenter";
-import { GET_NEARBY_DRIVERS, REPORT_LOCATION } from "./HomeQueries";
+import {
+  GET_NEARBY_DRIVERS,
+  REPORT_LOCATION,
+  REQUEST_RIDE
+} from "./HomeQueries";
 
 interface IState {
   isMenuOpen: boolean;
@@ -24,16 +30,17 @@ interface IState {
   distance: string;
   duration?: string;
   price?: string;
+  fromAddress: string;
 }
 
-interface IProps extends RouteChildrenProps<any> {
+interface IProps extends RouteComponentProps<any> {
   google: any;
   reportLocation: MutationFn;
 }
 
 class ProfileQuery extends Query<userProfile> {}
 class NearbyQueries extends Query<getDrivers> {}
-
+class RequestRideMutation extends Mutation<requestRide, requestRideVariables> {}
 
 class HomeContainer extends React.Component<IProps, IState> {
   public mapRef: any;
@@ -45,6 +52,7 @@ class HomeContainer extends React.Component<IProps, IState> {
   public state = {
     distance: "",
     duration: undefined,
+    fromAddress: "",
     isMenuOpen: false,
     lat: 0,
     lng: 0,
@@ -52,8 +60,8 @@ class HomeContainer extends React.Component<IProps, IState> {
     toAddress:
       "Athens International Airport (ATH), Attiki Odos, Spata Artemida 190 04, Greece",
     toLat: 0,
-    toLng: 0,
-    };
+    toLng: 0
+  };
   constructor(props) {
     super(props);
     this.mapRef = React.createRef();
@@ -66,38 +74,66 @@ class HomeContainer extends React.Component<IProps, IState> {
     );
   }
   public render() {
-    const { isMenuOpen, toAddress, price } = this.state;
+    const {
+      isMenuOpen,
+      toAddress,
+      price,
+      distance,
+      fromAddress,
+      lat,
+      lng,
+      toLat,
+      toLng,
+      duration
+    } = this.state;
     return (
       <ProfileQuery query={USER_PROFILE}>
         {({ data, loading }) => (
-          <NearbyQueries 
-            query ={GET_NEARBY_DRIVERS} 
+          <NearbyQueries
+            query={GET_NEARBY_DRIVERS}
             pollInterval={1000}
             skip={
               (data &&
                 data.GetMyProfile &&
                 data.GetMyProfile.user &&
-                data.GetMyProfile.user.isDriving) || 
-                false
-              } 
-              onCompleted={this.handleNearbyDrivers}
-            >
+                data.GetMyProfile.user.isDriving) ||
+              false
+            }
+            onCompleted={this.handleNearbyDrivers}
+          >
             {() => (
-              <HomePresenter
-                loading={loading}
-                isMenuOpen={isMenuOpen}
-                toggleMenu={this.toggleMenu}
-                mapRef={this.mapRef}
-                toAddress={toAddress}
-                onInputChange={this.onInputChange}
-                price={price}
-                data={data}
-                onAddressSubmit={this.onAddressSubmit}
-              />            
+              <RequestRideMutation
+                mutation={REQUEST_RIDE}
+                variables={{
+                  distance,
+                  dropOffAddress: toAddress,
+                  dropOffLat: toLat,
+                  dropOffLng: toLng,
+                  duration: duration || "",
+                  pickUpAddress: fromAddress,
+                  pickUpLat: lat,
+                  pickUpLng: lng,
+                  price: price || 0
+                }}
+              >
+                {requestRideFn => (
+                  <HomePresenter
+                    loading={loading}
+                    isMenuOpen={isMenuOpen}
+                    toggleMenu={this.toggleMenu}
+                    mapRef={this.mapRef}
+                    toAddress={toAddress}
+                    onInputChange={this.onInputChange}
+                    price={price}
+                    data={data}
+                    onAddressSubmit={this.onAddressSubmit}
+                    requestRideFn={requestRideFn}
+                  />
+                )}
+              </RequestRideMutation>
             )}
           </NearbyQueries>
-        )  
-      }
+        )}
       </ProfileQuery>
     );
   }
@@ -116,17 +152,25 @@ class HomeContainer extends React.Component<IProps, IState> {
       lat: latitude,
       lng: longitude
     });
+    this.getFromAdress(latitude, longitude);
     this.loadMap(latitude, longitude);
   };
+  public getFromAdress = async (lat: number, lng: number) => {
+    const address = await reverseGeoCode(lat, lng);
+    if (address) {
+      this.setState({
+        fromAddress: address
+      });
+    }
+  };
   public loadMap = (lat, lng) => {
-    // console.log(lat,lng)
     const { google } = this.props;
     const maps = google.maps;
     const mapNode = ReactDOM.findDOMNode(this.mapRef.current);
-    // if(!mapNode){
-    //   this.loadMap(lat,lng);
-    //   return;
-    // }
+    if (!mapNode) {
+      this.loadMap(lat, lng);
+      return;
+    }
     const mapConfig: google.maps.MapOptions = {
       center: {
         lat,
@@ -159,8 +203,8 @@ class HomeContainer extends React.Component<IProps, IState> {
   };
   public handleGeoWatchSuccess = (position: Position) => {
     const { reportLocation } = this.props;
-    const { 
-      coords: {latitude, longitude} 
+    const {
+      coords: { latitude, longitude }
     } = position;
     this.userMarker.setPosition({ lat: latitude, lng: longitude });
     this.map.panTo({ lat: latitude, lng: longitude });
@@ -185,16 +229,14 @@ class HomeContainer extends React.Component<IProps, IState> {
       [name]: value
     } as any);
   };
-
   public onAddressSubmit = async () => {
     const { toAddress } = this.state;
     const { google } = this.props;
     const maps = google.maps;
     const result = await geoCode(toAddress);
-    if(result !== false){
+    if (result !== false) {
       const { lat, lng, formatted_address: formatedAddress } = result;
-
-      if (this.toMarker){
+      if (this.toMarker) {
         this.toMarker.setMap(null);
       }
       const toMarkerOptions: google.maps.MarkerOptions = {
@@ -219,10 +261,9 @@ class HomeContainer extends React.Component<IProps, IState> {
       );
     }
   };
-
   public createPath = () => {
     const { toLat, toLng, lat, lng } = this.state;
-    if (this.directions ){
+    if (this.directions) {
       this.directions.setMap(null);
     }
     const renderOptions: google.maps.DirectionsRendererOptions = {
@@ -232,70 +273,70 @@ class HomeContainer extends React.Component<IProps, IState> {
       suppressMarkers: true
     };
     this.directions = new google.maps.DirectionsRenderer(renderOptions);
-    const direactionService: google.maps.DirectionsService = new google.maps.DirectionsService();
+    const directionsService: google.maps.DirectionsService = new google.maps.DirectionsService();
     const to = new google.maps.LatLng(toLat, toLng);
     const from = new google.maps.LatLng(lat, lng);
-    const directionOptions: google.maps.DirectionsRequest = {
+    const directionsOptions: google.maps.DirectionsRequest = {
       destination: to,
       origin: from,
-      travelMode: google.maps.TravelMode.TRANSIT  /// 몇번 바꾸어야 할 필요가 있음
+      travelMode: google.maps.TravelMode.TRANSIT
     };
-    direactionService.route(directionOptions, (result, status) => {
-      console.log(result);
-      if (status === google.maps.DirectionsStatus.OK) {
-        const { routes } = result;
-        const {
-          distance: { text: distance },
-          duration: { text: duration }
-        } = routes[0].legs[0];
-        this.directions.setDirections(result);
-        this.directions.setMap(this.map);
-        this.setState({
+    directionsService.route(directionsOptions, this.handleRouteRequest);
+  };
+  public handleRouteRequest = (
+    result: google.maps.DirectionsResult,
+    status: google.maps.DirectionsStatus
+  ) => {
+    if (status === google.maps.DirectionsStatus.OK) {
+      const { routes } = result;
+      const {
+        distance: { text: distance },
+        duration: { text: duration }
+      } = routes[0].legs[0];
+      this.directions.setDirections(result);
+      this.directions.setMap(this.map);
+      this.setState(
+        {
           distance,
           duration
         },
         this.setPrice
-        );       
-      }else{
-        toast.error("There is no route there, you have to ");
-      }
-    });
+      );
+    } else {
+      toast.error("There is no route there, you have to swim ");
+    }
   };
-  public setPrice = () =>{
-      const { distance } = this.state;
-      if ( distance ){
-        // distance.replace(",", "");
-        this.setState({
-          price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2)
-        })
-      }
-
+  public setPrice = () => {
+    const { distance } = this.state;
+    if (distance) {
+      this.setState({
+        price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2)
+      });
+    }
   };
-
   public handleNearbyDrivers = (data: {} | getDrivers) => {
     if ("GetNearbyDrivers" in data) {
       const {
-        GetNearbyDrivers: { drivers,ok}
+        GetNearbyDrivers: { drivers, ok }
       } = data;
       if (ok && drivers) {
-        for(const driver of drivers) {
-          if( driver && driver.lastLat && driver.lastLng) {
-
-            const existringDriver: 
-            |google.maps.Marker 
-            | undefined = this.drivers.find(
+        for (const driver of drivers) {
+          if (driver && driver.lastLat && driver.lastLng) {
+            const exisitingDriver:
+              | google.maps.Marker
+              | undefined = this.drivers.find(
               (driverMarker: google.maps.Marker) => {
                 const markerID = driverMarker.get("ID");
                 return markerID === driver.id;
               }
             );
-            
-            if(existringDriver){
-              existringDriver.setPosition({
+            if (exisitingDriver) {
+              exisitingDriver.setPosition({
                 lat: driver.lastLat,
                 lng: driver.lastLng
-              })
-            }else{
+              });
+              exisitingDriver.setMap(this.map);
+            } else {
               const markerOptions: google.maps.MarkerOptions = {
                 icon: {
                   path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
@@ -313,17 +354,16 @@ class HomeContainer extends React.Component<IProps, IState> {
               newMarker.set("ID", driver.id);
               newMarker.setMap(this.map);
             }
-
           }
         }
       }
     }
-  }
+  };
 }
 
-export default graphql<any,reportMovement,reportMovementVariables>(
+export default graphql<any, reportMovement, reportMovementVariables>(
   REPORT_LOCATION,
   {
     name: "reportLocation"
-  }  
+  }
 )(HomeContainer);

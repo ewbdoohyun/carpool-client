@@ -1,4 +1,5 @@
 import React from "react";
+import { MutationFn } from 'react-apollo';
 import Helmet from "react-helmet";
 import Sidebar from "react-sidebar";
 import AddressBar from "../../Components/AddressBar";
@@ -57,6 +58,7 @@ interface IProps {
   onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   price?: string;
   data?: userProfile;
+  requestRideFn?: MutationFn;
 }
 
 const HomePresenter: React.SFC<IProps> = ({
@@ -69,6 +71,7 @@ const HomePresenter: React.SFC<IProps> = ({
   onAddressSubmit,
   price,
   data,
+  requestRideFn
 }) => 
 (
   (
@@ -109,7 +112,7 @@ const HomePresenter: React.SFC<IProps> = ({
       )}
       {price && (
         <RequestButton 
-          onClick={onAddressSubmit}
+          onClick={requestRideFn}
           disabled={toAddress === ""}
           value={`Request Ride ($${price})`}
         />
