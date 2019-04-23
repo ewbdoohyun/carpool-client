@@ -29,7 +29,7 @@ interface IState {
   lng: number;
   distance: string;
   duration?: string;
-  price?: string;
+  price?: number;
   fromAddress: string;
 }
 
@@ -310,7 +310,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     const { distance } = this.state;
     if (distance) {
       this.setState({
-        price: Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2)
+        price: parseFloat(Number(parseFloat(distance.replace(",", "")) * 3).toFixed(2))
       });
     }
   };
