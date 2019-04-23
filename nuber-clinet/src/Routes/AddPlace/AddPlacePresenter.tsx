@@ -61,7 +61,7 @@ const AddPlacePresenter: React.SFC<IProps> = ({
           { pickedAddress &&
             (<Button onClick={null} value={loading ? "Adding place" : "Add Place"} 
             />
-            )}
+          )}
         </Form>
       </Container>
   </React.Fragment>
