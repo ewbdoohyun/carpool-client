@@ -123,7 +123,7 @@ class HomeContainer extends React.Component<IProps, IState> {
                 }}
               >
                 {requestRideFn => (
-                  <GetNearbyRides query={GET_NEARBY_RIDE} skip={isDriving}>
+                  <GetNearbyRides query={GET_NEARBY_RIDE} skip={!isDriving}>
                     {({ data: nearbyRide}) => (
                       <AcceptRide mutation={ACCEPT_RIDE}>
                         {acceptRideFn => (
@@ -137,6 +137,7 @@ class HomeContainer extends React.Component<IProps, IState> {
                           price={price}
                           data={data}
                           onAddressSubmit={this.onAddressSubmit}
+                          nearbyRide={nearbyRide}
                           requestRideFn={requestRideFn}
                           acceptRideFn={acceptRideFn}
                         />
