@@ -2016,7 +2016,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "UpdateRideStatusRsponse",
+                "name": "UpdateRideStatusResponse",
                 "ofType": null
               }
             },
@@ -2783,7 +2783,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "UpdateRideStatusRsponse",
+        "name": "UpdateRideStatusResponse",
         "description": "",
         "fields": [
           {
@@ -2809,6 +2809,18 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "rideId",
+            "description": "",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
               "ofType": null
             },
             "isDeprecated": false,
