@@ -1,3 +1,4 @@
+import { SubscribeToMoreOptions } from 'apollo-client';
 import React from "react";
 import { graphql, Mutation, MutationFn, Query } from "react-apollo";
 import ReactDOM from "react-dom";
@@ -23,6 +24,7 @@ import {
   GET_NEARBY_RIDE,
   REPORT_LOCATION,
   REQUEST_RIDE,
+  SUBSCRIBE_NEARBY_RIDES,
 } from "./HomeQueries";
 
 interface IState {
@@ -67,7 +69,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     lng: 0,
     price: undefined,
     toAddress:
-      "Athens International Airport (ATH), Attiki Odos, Spata Artemida 190 04, Greece",
+      "63 tower",
     toLat: 0,
     toLng: 0,
   };
@@ -124,26 +126,46 @@ class HomeContainer extends React.Component<IProps, IState> {
               >
                 {requestRideFn => (
                   <GetNearbyRides query={GET_NEARBY_RIDE} skip={!isDriving}>
-                    {({ data: nearbyRide}) => (
-                      <AcceptRide mutation={ACCEPT_RIDE}>
-                        {acceptRideFn => (
-                          <HomePresenter
-                          loading={loading}
-                          isMenuOpen={isMenuOpen}
-                          toggleMenu={this.toggleMenu}
-                          mapRef={this.mapRef}
-                          toAddress={toAddress}
-                          onInputChange={this.onInputChange}
-                          price={price}
-                          data={data}
-                          onAddressSubmit={this.onAddressSubmit}
-                          nearbyRide={nearbyRide}
-                          requestRideFn={requestRideFn}
-                          acceptRideFn={acceptRideFn}
-                        />
-                        )}
-                      </AcceptRide>
-                    )}
+                    {({subscribeToMore, data: nearbyRide}) => {
+                      const rideSubscriptionOptions: SubscribeToMoreOptions = {
+                        document: SUBSCRIBE_NEARBY_RIDES,
+                        updateQuery: (prev, { subscriptionData } ) => {
+                          if(!subscriptionData.data){
+                            return prev;
+                          }
+                          const newObject = Object.assign({}, prev, {
+                            GetNearbyRide: {
+                              ...prev.GetNearbyRide,
+                              ride: subscriptionData.data.NearbyRideSubscription
+                            }
+                          });
+                          return newObject;
+                        }
+                      };
+                      if (isDriving) {
+                        subscribeToMore(rideSubscriptionOptions);
+                      }
+                      return (
+                        <AcceptRide mutation={ACCEPT_RIDE}>
+                          {acceptRideFn => (
+                            <HomePresenter
+                            loading={loading}
+                            isMenuOpen={isMenuOpen}
+                            toggleMenu={this.toggleMenu}
+                            mapRef={this.mapRef}
+                            toAddress={toAddress}
+                            onInputChange={this.onInputChange}
+                            price={price}
+                            data={data}
+                            onAddressSubmit={this.onAddressSubmit}
+                            nearbyRide={nearbyRide}
+                            requestRideFn={requestRideFn}
+                            acceptRideFn={acceptRideFn}
+                          />
+                          )}
+                        </AcceptRide>
+                      )
+                    }}
                   </GetNearbyRides>
                 )}
               </RequestRideMutation>
@@ -395,6 +417,10 @@ class HomeContainer extends React.Component<IProps, IState> {
         });
       }
     }
+  }
+
+  public handleSubscriptionUpdate = data => {
+    console.log(data);
   }
 }
 

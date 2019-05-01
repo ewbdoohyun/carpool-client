@@ -83,7 +83,7 @@ class PhoneLoginContainer extends React.Component<
   };
 
   public onSubmit: React.FormEventHandler<HTMLFormElement> = event => {
-      
+      console.log("Why1");
       event.preventDefault();
       const { countryCode, phoneNumber } = this.state;
       const phone = `${countryCode}${phoneNumber}`;
