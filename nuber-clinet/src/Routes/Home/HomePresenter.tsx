@@ -124,7 +124,9 @@ const HomePresenter: React.SFC<IProps> = ({
       )}
       { nearbyRide && 
         nearbyRide.GetNearbyRide &&
-        nearbyRide.GetNearbyRide.ride && (
+        nearbyRide.GetNearbyRide.ride &&
+        nearbyRide.GetNearbyRide.ride.id && 
+        nearbyRide.GetNearbyRide.ride.passenger && (
         <RidePopUp
           id={nearbyRide.GetNearbyRide.ride.id}
           pickUpAddress={nearbyRide.GetNearbyRide.ride.pickUpAddress}
