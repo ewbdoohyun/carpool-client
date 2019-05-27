@@ -70,6 +70,43 @@ export interface addPlaceVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL query operation: getChat
+// ====================================================
+
+export interface getChat_GetChat_chat_messages {
+  __typename: "Message";
+  id: number;
+  text: string;
+  userId: number | null;
+}
+
+export interface getChat_GetChat_chat {
+  __typename: "Chat";
+  passengerId: number;
+  driverId: number;
+  messages: (getChat_GetChat_chat_messages | null)[] | null;
+}
+
+export interface getChat_GetChat {
+  __typename: "GetChatResponse";
+  ok: boolean;
+  error: string | null;
+  chat: getChat_GetChat_chat | null;
+}
+
+export interface getChat {
+  GetChat: getChat_GetChat;
+}
+
+export interface getChatVariables {
+  chatId: number;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL mutation operation: updateProfile
 // ====================================================
 
@@ -147,7 +184,7 @@ export interface getDrivers {
 
 export interface requestRide_RequestRide_ride {
   __typename: "Ride";
-  id: number | null;
+  id: number;
 }
 
 export interface requestRide_RequestRide {
@@ -189,12 +226,12 @@ export interface getRides_GetNearbyRide_ride_passenger {
 
 export interface getRides_GetNearbyRide_ride {
   __typename: "Ride";
-  id: number | null;
+  id: number;
   pickUpAddress: string;
   dropOffAddress: string;
   price: number;
   distance: string;
-  passenger: getRides_GetNearbyRide_ride_passenger | null;
+  passenger: getRides_GetNearbyRide_ride_passenger;
 }
 
 export interface getRides_GetNearbyRide {
@@ -247,12 +284,12 @@ export interface nearbyRides_NearbyRideSubscription_passenger {
 
 export interface nearbyRides_NearbyRideSubscription {
   __typename: "Ride";
-  id: number | null;
+  id: number;
   pickUpAddress: string;
   dropOffAddress: string;
   price: number;
   distance: string;
-  passenger: nearbyRides_NearbyRideSubscription_passenger | null;
+  passenger: nearbyRides_NearbyRideSubscription_passenger;
 }
 
 export interface nearbyRides {
@@ -305,15 +342,15 @@ export interface getRide_GetRide_ride_passenger {
 
 export interface getRide_GetRide_ride {
   __typename: "Ride";
-  id: number | null;
+  id: number;
   status: string;
   pickUpAddress: string;
   dropOffAddress: string;
   price: number;
   distance: string;
   duration: string;
-  driver: getRide_GetRide_ride_driver | null;
-  passenger: getRide_GetRide_ride_passenger | null;
+  driver: getRide_GetRide_ride_driver;
+  passenger: getRide_GetRide_ride_passenger;
   chatId: number | null;
 }
 
@@ -356,15 +393,15 @@ export interface rideUpdates_RideStatusSubscription_passenger {
 
 export interface rideUpdates_RideStatusSubscription {
   __typename: "Ride";
-  id: number | null;
+  id: number;
   status: string;
   pickUpAddress: string;
   dropOffAddress: string;
   price: number;
   distance: string;
   duration: string;
-  driver: rideUpdates_RideStatusSubscription_driver | null;
-  passenger: rideUpdates_RideStatusSubscription_passenger | null;
+  driver: rideUpdates_RideStatusSubscription_driver;
+  passenger: rideUpdates_RideStatusSubscription_passenger;
   chatId: number | null;
 }
 
