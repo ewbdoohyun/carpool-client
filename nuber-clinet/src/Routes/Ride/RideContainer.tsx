@@ -33,32 +33,31 @@ class RideContainer extends React.Component<IProps> {
         params: { rideId }
       }
     } = this.props;
-    console.log(this.props);
-    console.log(rideId);
     return (
       <ProfileQuery query={USER_PROFILE}>
         {({ data: userData }) => (
           <RideQuery query={GET_RIDE} variables={{ rideId }}>
             {({ data, loading, subscribeToMore }) => {
               const subscribeOptions: SubscribeToMoreOptions = {
-                document: RIDE_SUBSCRIPTION
-                // ,
-                // updateQuery: (prev, { subscriptionData }) => {
-                //   if (!subscriptionData.data) {
-                //     return prev;
-                //   }
-                //   console.log(prev, subscriptionData);
-                //   // return null;
-                // }
+                document: RIDE_SUBSCRIPTION,
+                updateQuery: (prev, { subscriptionData }) =>{
+                  if (!subscriptionData){
+                    return prev;
+                  }
+                  const {
+                    data: {
+                      RideStatusSubscription: {status}
+                    }
+                  } = subscriptionData;
+                  if (status === "FINISHED") {
+                    window.location.href = "/";
+                  }
+                }
               };
-              // if(rideId){
                 subscribeToMore(subscribeOptions);
-              // }g
               return (
                 <RideUpdate
                   mutation={UPDATE_RIDE_STATUS}
-                  // refetchQueries={GET_RIDE}
-                  // refetchQueries={[{ query: GET_RIDE, variables: {rideId}}]}
                 >
                   {updateRideFn => (
                     <RidePresenter
